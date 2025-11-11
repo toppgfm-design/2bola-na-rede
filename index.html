@@ -23,12 +23,16 @@
         body {
             background-color: #f5f5f5;
             color: #333;
+            line-height: 1.6;
         }
         header {
             background: linear-gradient(135deg, var(--primary), var(--dark));
             color: white;
             padding: 1rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .container {
             max-width: 1200px;
@@ -89,12 +93,17 @@
             display: flex;
             background-color: white;
             border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+            white-space: nowrap;
         }
         .tab {
             padding: 1rem 1.5rem;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            flex-shrink: 0;
+            min-width: 100px;
+            text-align: center;
         }
         .tab.active {
             border-bottom: 3px solid var(--secondary);
@@ -272,6 +281,7 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
         }
         .table-header {
             display: flex;
@@ -279,12 +289,14 @@
             color: white;
             font-weight: bold;
             padding: 1rem;
+            min-width: 600px;
         }
         .table-row {
             display: flex;
             padding: 1rem;
             border-bottom: 1px solid #eee;
             align-items: center;
+            min-width: 600px;
         }
         .table-row:last-child {
             border-bottom: none;
@@ -376,15 +388,65 @@
             nav ul {
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 0.5rem;
             }
             .hero h2 {
-                font-size: 2rem;
+                font-size: 1.8rem;
+            }
+            .hero {
+                height: 250px;
             }
             .teams-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
             }
             .bet-form {
                 grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .admin-tabs {
+                flex-wrap: wrap;
+            }
+            .admin-tab {
+                min-width: auto;
+                flex: 1;
+                text-align: center;
+            }
+            .table-header, .table-row {
+                min-width: 800px;
+            }
+            .standings-table, .matches-list {
+                overflow-x: auto;
+            }
+            .match-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .match-teams {
+                flex: none;
+            }
+            .btn-whatsapp {
+                width: 100%;
+                text-align: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+            .teams-grid {
+                grid-template-columns: 1fr;
+            }
+            .tab {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
             }
         }
         /* Novos estilos para a área administrativa */
@@ -647,9 +709,9 @@
                     <div class="form-group">
                         <label>Palpite do Placar *</label>
                         <div style="display: flex; align-items: center; gap: 1rem;">
-                            <input type="number" id="home-score" class="form-control" min="0" max="10" required style="text-align: center;">
+                            <input type="number" id="home-score" class="form-control" min="0" max="10" required style="text-align: center; width: 50px;">
                             <span style="font-weight: bold;">X</span>
-                            <input type="number" id="away-score" class="form-control" min="0" max="10" required style="text-align: center;">
+                            <input type="number" id="away-score" class="form-control" min="0" max="10" required style="text-align: center; width: 50px;">
                         </div>
                     </div>
                     <div class="form-group">
@@ -1178,530 +1240,4 @@
                 const row = document.createElement('div');
                 row.className = 'table-row';
                 const logoDisplay = team.logo ? `<img src="${team.logo}" alt="${team.name}" class="admin-team-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : '';
-                const fallbackLogo = team.logo ? `<div style="width: 30px; height: 30px; background: ${team.color}; border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; font-weight: bold;">${team.letter}</div>` : `<div style="width: 30px; height: 30px; background: ${team.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">${team.letter}</div>`;
-                row.innerHTML = `
-                    <div style="flex: 1">
-                        ${logoDisplay}
-                        ${fallbackLogo}
-                    </div>
-                    <div style="flex: 3">${team.name}</div>
-                    <div style="flex: 2">${team.city}</div>
-                    <div style="flex: 1">${team.founded}</div>
-                    <div style="flex: 2">${team.description || 'N/A'}</div>
-                    <div style="flex: 2" class="table-actions">
-                        <button class="btn btn-danger btn-sm" onclick="deleteTeam(${team.id})">Excluir</button>
-                    </div>
-                `;
-                teamsList.appendChild(row);
-            });
-        }
-
-        function deleteTeam(teamId) {
-            if (confirm('Tem certeza que deseja excluir este time?')) {
-                let teams = getStoredData('teams');
-                teams = teams.filter(team => team.id !== teamId);
-                setStoredData('teams', teams);
-                loadTeamsList();
-                loadTeams(); // Atualiza a exibição pública
-                loadHomeHighlights(); // Atualiza destaques
-                loadStandings(); // Recalcula classificação
-                alert('Time excluído com sucesso!');
-            }
-        }
-
-        // Gerenciar Apostas (com exclusão)
-        function initBetsManagement() {
-            const betsList = document.getElementById('bets-list');
-            if (!betsList) return;
-            const bets = getStoredData('bets');
-            betsList.innerHTML = '';
-            bets.forEach(bet => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${bet.name}</td>
-                    <td>${bet.email}</td>
-                    <td>${bet.match}</td>
-                    <td>${bet.homeScore} x ${bet.awayScore}</td>
-                    <td>${new Date(bet.date).toLocaleString()}</td>
-                    <td class="table-actions">
-                        <button class="btn btn-danger btn-sm" onclick="deleteBet(${bet.id})">Excluir</button>
-                    </td>
-                `;
-                betsList.appendChild(row);
-            });
-            // Atualizar totais
-            document.getElementById('total-bets').textContent = bets.length;
-            document.getElementById('total-amount').textContent = (bets.length * 6).toFixed(2);
-            document.getElementById('prize-amount').textContent = (bets.length * 5).toFixed(2);
-            document.getElementById('bets-received').textContent = bets.length; // Atualiza no bolão
-        }
-
-        function deleteBet(betId) {
-            if (confirm('Tem certeza que deseja excluir esta aposta?')) {
-                let bets = getStoredData('bets');
-                bets = bets.filter(bet => bet.id !== betId);
-                setStoredData('bets', bets);
-                initBetsManagement(); // Recarrega lista
-                alert('Aposta excluída com sucesso!');
-            }
-        }
-
-        // Gerenciar Jogos
-        function initMatchManagement() {
-            const addMatchForm = document.getElementById('add-match-form');
-            const homeTeamSelect = document.getElementById('home-team');
-            const awayTeamSelect = document.getElementById('away-team');
-            // Carregar times nos selects
-            function loadTeamsInSelects() {
-                const teams = getStoredData('teams');
-                homeTeamSelect.innerHTML = '<option value="">Selecione o time</option>';
-                awayTeamSelect.innerHTML = '<option value="">Selecione o time</option>';
-                teams.forEach(team => {
-                    const option = `<option value="${team.id}">${team.name}</option>`;
-                    homeTeamSelect.innerHTML += option;
-                    awayTeamSelect.innerHTML += option;
-                });
-            }
-            if (addMatchForm) {
-                addMatchForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const homeTeamId = parseInt(homeTeamSelect.value);
-                    const awayTeamId = parseInt(awayTeamSelect.value);
-                    const date = document.getElementById('match-date').value;
-                    const status = document.getElementById('match-status').value;
-                    if (homeTeamId === awayTeamId) {
-                        alert('Os times não podem ser iguais!');
-                        return;
-                    }
-                    const teams = getStoredData('teams');
-                    const homeTeam = teams.find(t => t.id === homeTeamId);
-                    const awayTeam = teams.find(t => t.id === awayTeamId);
-                    const matches = getStoredData('matches');
-                    const newMatch = {
-                        id: Date.now(),
-                        homeTeam: homeTeam.name,
-                        awayTeam: awayTeam.name,
-                        date: date,
-                        status: status,
-                        score: status === 'finished' ? '0-0' : '-'
-                    };
-                    matches.push(newMatch);
-                    setStoredData('matches', matches);
-                    alert('Jogo adicionado com sucesso!');
-                    addMatchForm.reset();
-                    loadMatchesList();
-                    loadBettingMatches(); // Atualiza opções no bolão
-                    loadHomeHighlights(); // Atualiza jogos no início
-                });
-            }
-            loadTeamsInSelects();
-        }
-
-        function loadMatchesList() {
-            const matchesList = document.getElementById('admin-matches-list');
-            if (!matchesList) return;
-            const matches = getStoredData('matches');
-            matchesList.innerHTML = '';
-            matches.forEach(match => {
-                const matchElement = document.createElement('div');
-                matchElement.className = 'match-item';
-                matchElement.innerHTML = `
-                    <div class="match-teams">
-                        <span>${match.homeTeam}</span>
-                        <span>vs</span>
-                        <span>${match.awayTeam}</span>
-                    </div>
-                    <div class="match-time">${new Date(match.date).toLocaleString()}</div>
-                    <div class="match-score">${match.score}</div>
-                    <div class="table-actions">
-                        <button class="btn btn-danger btn-sm" onclick="deleteMatch(${match.id})">Excluir</button>
-                    </div>
-                `;
-                matchesList.appendChild(matchElement);
-            });
-        }
-
-        function deleteMatch(matchId) {
-            if (confirm('Tem certeza que deseja excluir este jogo?')) {
-                let matches = getStoredData('matches');
-                matches = matches.filter(match => match.id !== matchId);
-                setStoredData('matches', matches);
-                loadMatchesList();
-                loadBettingMatches(); // Atualiza opções no bolão
-                loadHomeHighlights(); // Atualiza jogos no início
-                alert('Jogo excluído com sucesso!');
-            }
-        }
-
-        // Gerenciar Classificação
-        function initStandingsManagement() {
-            const updateBtn = document.getElementById('update-stats-btn');
-            const updateResult = document.getElementById('update-result');
-            const updateTeamSelect = document.getElementById('update-team');
-            if (updateBtn) {
-                updateBtn.addEventListener('click', function() {
-                    const teamId = parseInt(updateTeamSelect.value);
-                    if (!teamId) {
-                        showUpdateResult('Selecione um time para atualizar.', 'error');
-                        return;
-                    }
-                    const pj = parseInt(document.getElementById('update-pj').value) || 0;
-                    const v = parseInt(document.getElementById('update-v').value) || 0;
-                    const e = parseInt(document.getElementById('update-e').value) || 0;
-                    const d = parseInt(document.getElementById('update-d').value) || 0;
-                    const gp = parseInt(document.getElementById('update-gp').value) || 0;
-                    const gc = parseInt(document.getElementById('update-gc').value) || 0;
-                    const pts = v * 3 + e * 1;
-                    const sg = gp - gc;
-
-                    let teams = getStoredData('teams');
-                    const teamIndex = teams.findIndex(t => t.id === teamId);
-                    if (teamIndex !== -1) {
-                        teams[teamIndex] = { ...teams[teamIndex], pj, v, e, d, gp, gc, sg, pts };
-                        setStoredData('teams', teams);
-                        showUpdateResult('Estatísticas atualizadas com sucesso! Classificação recalculada.', 'success');
-                        loadStandings();
-                        loadHomeHighlights(); // Atualiza destaques no início
-                        // Limpar form
-                        document.getElementById('update-pj').value = '';
-                        document.getElementById('update-v').value = '';
-                        document.getElementById('update-e').value = '';
-                        document.getElementById('update-d').value = '';
-                        document.getElementById('update-gp').value = '';
-                        document.getElementById('update-gc').value = '';
-                    } else {
-                        showUpdateResult('Time não encontrado.', 'error');
-                    }
-                });
-            }
-            // Carregar times no select
-            function loadTeamsInUpdateSelect() {
-                const teams = getStoredData('teams');
-                updateTeamSelect.innerHTML = '<option value="">Selecione um time</option>';
-                teams.forEach(team => {
-                    const option = `<option value="${team.id}">${team.name}</option>`;
-                    updateTeamSelect.innerHTML += option;
-                });
-                // Preencher campos atuais ao selecionar
-                updateTeamSelect.addEventListener('change', function() {
-                    const teamId = parseInt(this.value);
-                    const teams = getStoredData('teams');
-                    const team = teams.find(t => t.id === teamId);
-                    if (team) {
-                        document.getElementById('update-pj').value = team.pj;
-                        document.getElementById('update-v').value = team.v;
-                        document.getElementById('update-e').value = team.e;
-                        document.getElementById('update-d').value = team.d;
-                        document.getElementById('update-gp').value = team.gp;
-                        document.getElementById('update-gc').value = team.gc;
-                    }
-                });
-            }
-            loadTeamsInUpdateSelect();
-        }
-
-        function showUpdateResult(message, type) {
-            const updateResult = document.getElementById('update-result');
-            updateResult.innerHTML = message;
-            updateResult.className = `bet-result ${type}`;
-            updateResult.style.display = 'block';
-        }
-
-        // Carregar todos os dados administrativos
-        function loadAdminData() {
-            loadTeamsList();
-            initBetsManagement();
-            loadMatchesList();
-            initStandingsManagement();
-            initHeroBgManagement();
-        }
-
-        // Sistema de abas
-        function initTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            const navLinks = document.querySelectorAll('.nav-link');
-            const tabContents = document.querySelectorAll('.tab-content');
-            function switchTab(tabName) {
-                // Remover classe active de todas as abas e conteúdos
-                tabs.forEach(tab => tab.classList.remove('active'));
-                navLinks.forEach(link => link.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                // Adicionar classe active à aba selecionada
-                const selectedTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
-                const selectedNav = document.querySelector(`.nav-link[data-tab="${tabName}"]`);
-                const selectedContent = document.getElementById(`${tabName}-content`);
-                if (selectedTab) selectedTab.classList.add('active');
-                if (selectedNav) selectedNav.classList.add('active');
-                if (selectedContent) selectedContent.classList.add('active');
-            }
-            // Adicionar eventos de clique nas abas
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
-            // Adicionar eventos de clique nos links de navegação
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
-            // Links do footer
-            document.querySelectorAll('.footer-section a[data-tab]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
-        }
-
-        // Sistema de apostas (só jogos agendados)
-        function loadBettingMatches() {
-            const matchSelect = document.getElementById('match');
-            const matches = getStoredData('matches').filter(m => m.status === 'scheduled');
-            matchSelect.innerHTML = '<option value="">Selecione um jogo agendado</option>';
-            matches.forEach(match => {
-                const option = `<option value="${match.homeTeam} vs ${match.awayTeam}">${match.homeTeam} vs ${match.awayTeam} - ${new Date(match.date).toLocaleString('pt-BR')}</option>`;
-                matchSelect.innerHTML += option;
-            });
-            if (matches.length === 0) {
-                matchSelect.innerHTML += '<option disabled>Nenhum jogo agendado disponível</option>';
-            }
-        }
-
-        function showBetResult(message, type) {
-            const betResult = document.getElementById('bet-result');
-            if (betResult) {
-                betResult.innerHTML = message;
-                betResult.className = 'bet-result ' + type;
-                betResult.style.display = 'block';
-                // Rolagem suave para o resultado
-                betResult.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        function initBetting() {
-            const betForm = document.getElementById('bet-form');
-            const betResult = document.getElementById('bet-result');
-            if (betForm && betResult) {
-                betForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    // Coletar dados do formulário
-                    const name = document.getElementById('name').value;
-                    const email = document.getElementById('email').value;
-                    const phone = document.getElementById('phone').value;
-                    const match = document.getElementById('match').value;
-                    const homeScore = document.getElementById('home-score').value;
-                    const awayScore = document.getElementById('away-score').value;
-                    // Validação básica
-                    if (!name || !email || !match || homeScore === '' || awayScore === '') {
-                        showBetResult('Por favor, preencha todos os campos obrigatórios.', 'error');
-                        return;
-                    }
-                    // Salvar aposta no localStorage
-                    const bets = getStoredData('bets');
-                    const newBet = {
-                        id: Date.now(),
-                        name: name,
-                        email: email,
-                        phone: phone,
-                        match: match,
-                        homeScore: homeScore,
-                        awayScore: awayScore,
-                        date: new Date().toISOString()
-                    };
-                    bets.push(newBet);
-                    setStoredData('bets', bets);
-                    showBetResult(`Aposta registrada com sucesso!<br>
-                        <strong>${name}</strong>, sua aposta no jogo <strong>${match}</strong> foi: <strong>${homeScore} x ${awayScore}</strong><br>
-                        Valor: <strong>R$ 6,00</strong><br>
-                        Você receberá um e-mail de confirmação em <strong>${email}</strong>`, 'success');
-                    // Limpar formulário
-                    betForm.reset();
-                    initBetsManagement(); // Atualiza lista no admin
-                });
-            }
-        }
-
-        // Carregar dados dos times (com descrições e logos como background ou img)
-        function loadTeams() {
-            const teamsGrid = document.getElementById('teams-grid');
-            if (!teamsGrid) return;
-            const teams = getStoredData('teams');
-            teamsGrid.innerHTML = '';
-            teams.forEach(team => {
-                const teamCard = document.createElement('div');
-                teamCard.className = 'team-card';
-                let logoHtml = '';
-                if (team.logo) {
-                    if (team.logo.startsWith('data:image/')) {
-                        logoHtml = `<div class="team-logo" style="background-image: url(${team.logo});"></div>`;
-                    } else {
-                        logoHtml = `<div class="team-logo"><img src="${team.logo}" alt="${team.name}" onerror="this.parentElement.style.backgroundColor='#f8f8f8'; this.style.display='none';"></div>`;
-                    }
-                } else {
-                    logoHtml = `<div class="team-logo"><div style="width: 80px; height: 80px; background: ${team.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">${team.letter}</div></div>`;
-                }
-                teamCard.innerHTML = `
-                    ${logoHtml}
-                    <div class="team-info">
-                        <div class="team-name">${team.name}</div>
-                        ${team.description ? `<div class="team-description">${team.description}</div>` : ''}
-                        <div class="team-stats">
-                            <span>Fundado: ${team.founded}</span>
-                            <span>Cidade: ${team.city}</span>
-                        </div>
-                    </div>
-                `;
-                teamsGrid.appendChild(teamCard);
-            });
-        }
-
-        // Carregar destaques no Início (times líderes e jogos)
-        function loadHomeHighlights() {
-            const homeTeamsGrid = document.getElementById('home-teams-grid');
-            const homeMatchesList = document.getElementById('home-matches-list');
-            if (!homeTeamsGrid || !homeMatchesList) return;
-
-            // Times líderes (top 3 por pontos)
-            let teams = getStoredData('teams');
-            teams = teams.sort((a, b) => b.pts - a.pts || b.sg - a.sg).slice(0, 3);
-            homeTeamsGrid.innerHTML = '';
-            teams.forEach(team => {
-                const teamCard = document.createElement('div');
-                teamCard.className = 'team-card';
-                let logoHtml = '';
-                if (team.logo) {
-                    if (team.logo.startsWith('data:image/')) {
-                        logoHtml = `<div class="team-logo" style="background-image: url(${team.logo});"></div>`;
-                    } else {
-                        logoHtml = `<div class="team-logo"><img src="${team.logo}" alt="${team.name}" onerror="this.parentElement.style.backgroundColor='#f8f8f8'; this.style.display='none';"></div>`;
-                    }
-                } else {
-                    logoHtml = `<div class="team-logo"><div style="width: 80px; height: 80px; background: ${team.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">${team.letter}</div></div>`;
-                }
-                teamCard.innerHTML = `
-                    ${logoHtml}
-                    <div class="team-info">
-                        <div class="team-name">${team.name}</div>
-                        <div class="team-stats">
-                            <span>Vitórias: ${team.v}</span>
-                            <span>Pontos: ${team.pts}</span>
-                        </div>
-                    </div>
-                `;
-                homeTeamsGrid.appendChild(teamCard);
-            });
-
-            // Próximos jogos (agendados)
-            const matches = getStoredData('matches').filter(m => m.status === 'scheduled').slice(0, 3);
-            homeMatchesList.innerHTML = '';
-            matches.forEach(match => {
-                const matchItem = document.createElement('div');
-                matchItem.className = 'match-item';
-                matchItem.innerHTML = `
-                    <div class="match-teams">
-                        <span>${match.homeTeam}</span>
-                        <span>vs</span>
-                        <span>${match.awayTeam}</span>
-                    </div>
-                    <div class="match-time">${new Date(match.date).toLocaleDateString('pt-BR', { weekday: 'short', month: 'short', day: 'numeric' })} ${new Date(match.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-                    <div class="match-score">-</div>
-                `;
-                homeMatchesList.appendChild(matchItem);
-            });
-            if (matches.length === 0) {
-                homeMatchesList.innerHTML = '<div class="match-item"><p>Nenhum jogo agendado no momento.</p></div>';
-            }
-        }
-
-        // Carregar classificação (dinâmica com logos e posições calculadas)
-        function loadStandings() {
-            const standingsBody = document.getElementById('standings-body');
-            if (!standingsBody) return;
-            let teams = getStoredData('teams');
-            // Ordenar por pontos (descendente), depois por SG
-            teams = teams.sort((a, b) => b.pts - a.pts || b.sg - a.sg);
-            standingsBody.innerHTML = '';
-            teams.forEach((team, index) => {
-                const row = document.createElement('div');
-                row.className = 'table-row';
-                const pos = index + 1;
-                let logoHtml = '';
-                if (team.logo) {
-                    if (team.logo.startsWith('data:image/')) {
-                        logoHtml = `<div style="width: 24px; height: 24px; background-image: url(${team.logo}); background-size: cover; background-position: center; border-radius: 50%;"></div>`;
-                    } else {
-                        logoHtml = `<img src="${team.logo}" alt="${team.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 24px; height: 24px; object-fit: cover; border-radius: 50%;">`;
-                    }
-                } else {
-                    logoHtml = `<div style="width: 24px; height: 24px; background: ${team.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">${team.letter}</div>`;
-                }
-                row.innerHTML = `
-                    <div class="pos">${pos}</div>
-                    <div class="team-cell">
-                        ${logoHtml}
-                        ${team.name}
-                    </div>
-                    <div class="stats">${team.pj}</div>
-                    <div class="stats">${team.v}</div>
-                    <div class="stats">${team.e}</div>
-                    <div class="stats">${team.d}</div>
-                    <div class="stats">${team.gp}</div>
-                    <div class="stats">${team.gc}</div>
-                    <div class="stats">${team.sg > 0 ? '+' : ''}${team.sg}</div>
-                    <div class="stats" style="font-weight: bold;">${team.pts}</div>
-                `;
-                standingsBody.appendChild(row);
-            });
-        }
-
-        // Carregar jogos na aba matches (usando dados do localStorage)
-        function loadMatches() {
-            const matchesList = document.getElementById('matches-list');
-            if (!matchesList) return;
-            const matches = getStoredData('matches');
-            matchesList.innerHTML = '';
-            if (matches.length === 0) {
-                matchesList.innerHTML = '<div class="match-item"><p>Nenhum jogo cadastrado ainda.</p></div>';
-                return;
-            }
-            matches.forEach(match => {
-                const matchItem = document.createElement('div');
-                matchItem.className = 'match-item';
-                matchItem.innerHTML = `
-                    <div class="match-teams">
-                        <span>${match.homeTeam}</span>
-                        <span>vs</span>
-                        <span>${match.awayTeam}</span>
-                    </div>
-                    <div class="match-time">${new Date(match.date).toLocaleDateString('pt-BR')} ${new Date(match.date).toLocaleTimeString('pt-BR')}</div>
-                    <div class="match-score">${match.score}</div>
-                `;
-                matchesList.appendChild(matchItem);
-            });
-        }
-
-        // Inicializar tudo quando a página carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeData();
-            applyHeroBackground();
-            initTabs();
-            initBetting();
-            loadTeams();
-            loadStandings();
-            loadMatches();
-            loadBettingMatches();
-            loadHomeHighlights();
-            initAdminLogin();
-            initAdminTabs();
-            initTeamManagement();
-            initMatchManagement();
-        });
-    </script>
-</body>
-</html>
+                const fallbackLogo = team.logo ? `<div style="width: 30px; height: 30px; background: ${team.color}; border-radius: 50%; display: none; align-items: center; justify-content: center; color: white
