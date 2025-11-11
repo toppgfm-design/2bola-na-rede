@@ -48,6 +48,7 @@
         }
         .logo img {
             height: 50px;
+            border-radius: 50%;
         }
         .logo h1 {
             font-size: 1.5rem;
@@ -510,6 +511,77 @@
             border-radius: 8px;
             margin-top: 0.5rem;
         }
+        /* Estilos para Anúncios/Parceiros */
+        .partners-section {
+            margin-top: 2rem;
+        }
+        .partners-section h2 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-left: 4px solid var(--secondary);
+            padding-left: 1rem;
+        }
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            background: white;
+        }
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+        }
+        .carousel-slide.active {
+            opacity: 1;
+        }
+        .carousel-slide img {
+            max-width: 100%;
+            max-height: 120px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+        }
+        .carousel-slide h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .carousel-slide p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .partners-contact {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .partners-contact .btn-whatsapp {
+            display: inline-block;
+        }
+        .admin-ads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .admin-ads-table th, .admin-ads-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .admin-ads-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
 
         /* Melhorias para Responsividade */
         /* Mobile First - Ajustes para telas pequenas (até 768px) */
@@ -644,6 +716,15 @@
             .contact-section {
                 padding: 1.5rem;
             }
+            .carousel-container {
+                height: 180px;
+            }
+            .carousel-slide img {
+                max-height: 100px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Tablets (entre 769px e 1024px) */
@@ -688,9 +769,8 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo">
-                    <div style="width: 50px; height: 50px; background: #e74c3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">BR</div>
-                    <h1>Bola na Rede</h1>
+                <div class="logo" id="platform-logo">
+                    <!-- Logo será carregada via JS -->
                 </div>
                 <nav>
                     <ul>
@@ -729,6 +809,9 @@
             <h2 class="section-title">Próximos Jogos</h2>
             <div class="matches-list" id="home-matches-list">
                 <!-- Jogos serão carregados via JavaScript -->
+            </div>
+            <div class="partners-section" id="partners-section">
+                <!-- Anúncios dos parceiros serão carregados via JavaScript -->
             </div>
         </div>
         <!-- Conteúdo da Aba Times -->
@@ -778,9 +861,7 @@
                 <div class="bet-info">
                     <h4>Como funciona o Bolão?</h4>
                     <p>• Cada aposta custa <strong>R$ 6,00</strong></p>
-                    <p>• <strong>16,67%</strong> é destinado à manutenção da plataforma (R$ 1,00 por aposta)</p>
-                    <p>• <strong>83,33%</strong> vão para o prêmio (R$ 5,00 por aposta)</p>
-                    <p>• Quem acertar o placar exato ganha a parte proporcional do prêmio</p>
+                    <p>• O prêmio total é dividido entre quem acertar o placar exato</p>
                     <p>• Múltiplos acertadores dividem o prêmio igualmente</p>
                 </div>
                 <form id="bet-form" class="bet-form">
@@ -817,9 +898,9 @@
                 </form>
                 <div id="bet-result" class="bet-result"></div>
                 <div class="bet-info">
-                    <h4>Próximo Sorteio</h4>
-                    <p><strong>Data:</strong> Domingo, 20:00</p>
-                    <p><strong>Prêmio Acumulado:</strong> R$ 1.250,00</p>
+                    <h4 id="next-draw-title">Próximo Sorteio</h4>
+                    <p><strong>Data:</strong> <span id="next-draw-date">Domingo, 20:00</span></p>
+                    <p><strong>Prêmio Acumulado:</strong> R$ <span id="prize-amount">0</span></p>
                     <p><strong>Apostas Recebidas:</strong> <span id="bets-received">0</span></p>
                 </div>
             </div>
@@ -844,9 +925,11 @@
                 </div>
                 <div class="admin-tabs">
                     <div class="admin-tab active" data-admin-tab="images">Gerenciar Imagens</div>
+                    <div class="admin-tab" data-admin-tab="platform">Plataforma</div>
                     <div class="admin-tab" data-admin-tab="teams">Gerenciar Times</div>
                     <div class="admin-tab" data-admin-tab="bets">Gerenciar Apostas</div>
                     <div class="admin-tab" data-admin-tab="matches">Gerenciar Jogos</div>
+                    <div class="admin-tab" data-admin-tab="ads">Gerenciar Anúncios</div>
                     <div class="admin-tab" data-admin-tab="standings">Gerenciar Classificação</div>
                 </div>
                 <!-- Gerenciar Imagens (Hero Background) -->
@@ -871,11 +954,34 @@
                         <div id="hero-result" class="bet-result" style="margin-top: 1rem;"></div>
                     </div>
                 </div>
+                <!-- Gerenciar Plataforma (Logo) -->
+                <div class="admin-content" id="admin-platform">
+                    <div class="admin-section">
+                        <h4>Alterar Logo da Plataforma</h4>
+                        <p>Escolha uma imagem via URL ou upload local para o logo do Bola na Rede.</p>
+                        <form id="platform-logo-form">
+                            <div class="form-group">
+                                <label for="platform-logo-url">URL da Imagem</label>
+                                <input type="url" id="platform-logo-url" class="form-control" placeholder="https://images.unsplash.com/photo-...">
+                            </div>
+                            <div class="form-group">
+                                <label for="platform-logo-file">Ou Upload Local</label>
+                                <input type="file" id="platform-logo-file" class="form-control" accept="image/*">
+                            </div>
+                            <div id="platform-logo-preview" style="display: none; text-align: center;">
+                                <img id="platform-logo-preview-img" class="logo-preview" alt="Preview">
+                            </div>
+                            <button type="submit" class="btn btn-success">Aplicar Logo</button>
+                        </form>
+                        <div id="platform-result" class="bet-result" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
                 <!-- Gerenciar Times -->
                 <div class="admin-content" id="admin-teams">
                     <div class="admin-section">
-                        <h4>Adicionar Novo Time</h4>
+                        <h4 id="team-form-title">Adicionar Novo Time</h4>
                         <form id="add-team-form">
+                            <input type="hidden" id="edit-team-id">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="team-name">Nome do Time</label>
@@ -918,7 +1024,8 @@
                                     <textarea id="team-description" class="form-control" rows="2" placeholder="Ex: Técnico: João Silva | Presidente: Maria Oliveira"></textarea>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-success">Adicionar Time</button>
+                            <button type="submit" class="btn btn-success" id="team-submit-btn">Adicionar Time</button>
+                            <button type="button" class="btn btn-secondary" id="cancel-edit-btn" style="display: none; margin-left: 1rem;">Cancelar</button>
                         </form>
                     </div>
                     <div class="admin-section">
@@ -945,7 +1052,7 @@
                         <div class="bet-info">
                             <p><strong>Total de Apostas:</strong> <span id="total-bets">0</span></p>
                             <p><strong>Valor Total Arrecadado:</strong> R$ <span id="total-amount">0</span></p>
-                            <p><strong>Prêmio Disponível:</strong> R$ <span id="prize-amount">0</span></p>
+                            <p><strong>Prêmio Disponível:</strong> R$ <span id="prize-amount-admin">0</span></p>
                         </div>
                         <table class="bets-table">
                             <thead>
@@ -1005,6 +1112,62 @@
                         <div id="admin-matches-list">
                             <!-- Lista de jogos será carregada aqui -->
                         </div>
+                    </div>
+                </div>
+                <!-- Gerenciar Anúncios -->
+                <div class="admin-content" id="admin-ads">
+                    <div class="admin-section">
+                        <h4>Adicionar Novo Anúncio/Parceiro</h4>
+                        <form id="add-ad-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ad-title">Título do Anúncio</label>
+                                    <input type="text" id="ad-title" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ad-whatsapp">Número WhatsApp (com código país, ex: 5511999999999)</label>
+                                    <input type="tel" id="ad-whatsapp" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="image-upload-group">
+                                <label>Imagem do Anúncio</label>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="ad-image-url">URL da Imagem</label>
+                                        <input type="url" id="ad-image-url" class="form-control" placeholder="https://images.unsplash.com/photo-...">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ad-image-file">Ou Upload Local</label>
+                                        <input type="file" id="ad-image-file" class="form-control" accept="image/*">
+                                    </div>
+                                </div>
+                                <div id="ad-image-preview" style="display: none;">
+                                    <img id="ad-image-preview-img" class="image-preview" alt="Preview">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="ad-description">Descrição</label>
+                                <textarea id="ad-description" class="form-control" rows="2" placeholder="Descrição do parceiro..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success">Adicionar Anúncio</button>
+                        </form>
+                    </div>
+                    <div class="admin-section">
+                        <h4>Anúncios Cadastrados</h4>
+                        <table class="admin-ads-table">
+                            <thead>
+                                <tr>
+                                    <th>Imagem</th>
+                                    <th>Título</th>
+                                    <th>Descrição</th>
+                                    <th>WhatsApp</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ads-list">
+                                <!-- Lista de anúncios será carregada aqui -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <!-- Gerenciar Classificação -->
@@ -1080,10 +1243,12 @@
         </div>
     </footer>
     <script>
-        // ===== SISTEMA DE ADMINISTRAÇÃO =====
+// ===== SISTEMA DE ADMINISTRAÇÃO =====
         // Senha de administração (em um sistema real, isso seria no backend)
         const ADMIN_PASSWORD = "admin123";
         const ADMIN_PHONE = "5511999999999"; // Número do WhatsApp do admin (com código do país)
+        let editingTeamId = null; // Para edição de times
+        let currentAdIndex = 0; // Para carrossel de anúncios
         // Dados armazenados no localStorage
         function getStoredData(key) {
             const data = localStorage.getItem(key);
@@ -1117,9 +1282,16 @@
             if (!localStorage.getItem('matches')) {
                 setStoredData('matches', []);
             }
+            if (!localStorage.getItem('ads')) {
+                setStoredData('ads', []);
+            }
             // Inicializar background da hero se não existir
             if (!localStorage.getItem('heroBackground')) {
                 localStorage.setItem('heroBackground', 'linear-gradient(135deg, #2c3e50, #34495e)');
+            }
+            // Inicializar logo da plataforma se não existir
+            if (!localStorage.getItem('platformLogo')) {
+                localStorage.setItem('platformLogo', '');
             }
         }
         // Aplicar background da hero
@@ -1127,6 +1299,16 @@
             const hero = document.getElementById('hero-section');
             const bg = localStorage.getItem('heroBackground') || 'linear-gradient(135deg, #2c3e50, #34495e)';
             hero.style.background = `${bg} no-repeat center center/cover`;
+        }
+        // Aplicar logo da plataforma
+        function applyPlatformLogo() {
+            const logoContainer = document.getElementById('platform-logo');
+            const logo = localStorage.getItem('platformLogo');
+            if (logo) {
+                logoContainer.innerHTML = `<img src="${logo}" alt="Bola na Rede" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="width: 50px; height: 50px; background: #e74c3c; border-radius: 50%; display: none; align-items: center; justify-content: center; color: white; font-weight: bold;">BR</div><h1>Bola na Rede</h1>`;
+            } else {
+                logoContainer.innerHTML = `<div style="width: 50px; height: 50px; background: #e74c3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">BR</div><h1>Bola na Rede</h1>`;
+            }
         }
         // Sistema de Login
         function initAdminLogin() {
@@ -1152,6 +1334,11 @@
             document.getElementById('admin-panel').style.display = 'none';
             document.getElementById('admin-login').style.display = 'block';
             document.getElementById('login-form').reset();
+            editingTeamId = null;
+            document.getElementById('team-form-title').textContent = 'Adicionar Novo Time';
+            document.getElementById('team-submit-btn').textContent = 'Adicionar Time';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+            document.getElementById('add-team-form').reset();
         }
         // Sistema de Abas Administrativas
         function initAdminTabs() {
@@ -1229,11 +1416,83 @@
             const currentBg = localStorage.getItem('heroBackground') || 'linear-gradient(135deg, #2c3e50, #34495e)';
             preview.style.backgroundImage = currentBg;
         }
-        // Gerenciar Times (com upload para logos)
+        // Gerenciar Logo da Plataforma
+        function initPlatformLogoManagement() {
+            const form = document.getElementById('platform-logo-form');
+            const previewContainer = document.getElementById('platform-logo-preview');
+            const previewImg = document.getElementById('platform-logo-preview-img');
+            const result = document.getElementById('platform-result');
+            const urlInput = document.getElementById('platform-logo-url');
+            const fileInput = document.getElementById('platform-logo-file');
+            // Preview para URL
+            urlInput.addEventListener('input', function() {
+                if (this.value) {
+                    previewImg.src = this.value;
+                    previewContainer.style.display = 'block';
+                } else {
+                    previewContainer.style.display = 'none';
+                }
+            });
+            // Preview para file
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    fileToBase64(file).then(base64 => {
+                        previewImg.src = base64;
+                        previewContainer.style.display = 'block';
+                    }).catch(err => {
+                        alert('Erro ao carregar imagem: ' + err);
+                    });
+                } else {
+                    previewContainer.style.display = 'none';
+                }
+            });
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                let newLogo = localStorage.getItem('platformLogo') || '';
+                if (urlInput.value) {
+                    newLogo = urlInput.value;
+                } else if (fileInput.files[0]) {
+                    fileToBase64(fileInput.files[0]).then(base64 => {
+                        newLogo = base64;
+                        localStorage.setItem('platformLogo', newLogo);
+                        applyPlatformLogo();
+                        result.innerHTML = 'Logo atualizado com sucesso!';
+                        result.className = 'bet-result success';
+                        result.style.display = 'block';
+                        form.reset();
+                        previewContainer.style.display = 'none';
+                    }).catch(err => {
+                        result.innerHTML = 'Erro ao processar imagem: ' + err;
+                        result.className = 'bet-result error';
+                        result.style.display = 'block';
+                    });
+                    return;
+                }
+                localStorage.setItem('platformLogo', newLogo);
+                applyPlatformLogo();
+                result.innerHTML = 'Logo atualizado com sucesso!';
+                result.className = 'bet-result success';
+                result.style.display = 'block';
+                form.reset();
+                previewContainer.style.display = 'none';
+            });
+            // Carregar preview atual
+            const currentLogo = localStorage.getItem('platformLogo');
+            if (currentLogo) {
+                previewImg.src = currentLogo;
+                previewContainer.style.display = 'block';
+            }
+        }
+        // Gerenciar Times (com edição)
         function initTeamManagement() {
             const addTeamForm = document.getElementById('add-team-form');
             const previewContainer = document.getElementById('team-logo-preview');
             const previewImg = document.getElementById('team-logo-preview-img');
+            const formTitle = document.getElementById('team-form-title');
+            const submitBtn = document.getElementById('team-submit-btn');
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            const editIdInput = document.getElementById('edit-team-id');
             if (addTeamForm) {
                 const urlInput = document.getElementById('team-logo-url');
                 const fileInput = document.getElementById('team-logo-file');
@@ -1267,44 +1526,91 @@
                     const founded = document.getElementById('team-founded').value;
                     const color = document.getElementById('team-color').value;
                     const description = document.getElementById('team-description').value || '';
-                    let logo = '';
-                    if (urlInput.value) {
-                        logo = urlInput.value;
-                    } else if (fileInput.files[0]) {
+                    let logo = urlInput.value || (fileInput.files[0] ? '' : getStoredData('teams').find(t => t.id == editingTeamId)?.logo || '');
+                    if (fileInput.files[0]) {
                         fileToBase64(fileInput.files[0]).then(base64 => {
                             logo = base64;
-                            saveNewTeam(name, city, founded, color, logo, description);
+                            saveTeamChanges(editingTeamId, name, city, founded, color, logo, description);
                         }).catch(err => {
                             alert('Erro ao processar logo: ' + err);
                         });
                         return;
                     }
-                    saveNewTeam(name, city, founded, color, logo, description);
+                    saveTeamChanges(editingTeamId, name, city, founded, color, logo, description);
+                });
+                // Cancelar edição
+                cancelBtn.addEventListener('click', function() {
+                    editingTeamId = null;
+                    formTitle.textContent = 'Adicionar Novo Time';
+                    submitBtn.textContent = 'Adicionar Time';
+                    cancelBtn.style.display = 'none';
+                    addTeamForm.reset();
+                    previewContainer.style.display = 'none';
+                    editIdInput.value = '';
                 });
             }
         }
-        function saveNewTeam(name, city, founded, color, logo, description) {
+        function saveTeamChanges(editId, name, city, founded, color, logo, description) {
             const teams = getStoredData('teams');
-            const newTeam = {
-                id: Date.now(),
-                name: name,
-                city: city,
-                founded: founded,
-                color: color,
-                letter: String.fromCharCode(65 + teams.length), // Gera A, B, C, etc.
-                logo: logo,
-                description: description,
-                pj: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0, pts: 0 // Estatísticas iniciais
-            };
-            teams.push(newTeam);
-            setStoredData('teams', teams);
-            alert('Time adicionado com sucesso!');
-            document.getElementById('add-team-form').reset();
-            document.getElementById('team-logo-preview').style.display = 'none';
+            if (editId) {
+                // Editar
+                const teamIndex = teams.findIndex(t => t.id == editId);
+                if (teamIndex !== -1) {
+                    teams[teamIndex] = { ...teams[teamIndex], name, city, founded, color, logo, description };
+                    setStoredData('teams', teams);
+                    alert('Time atualizado com sucesso!');
+                }
+                editingTeamId = null;
+                document.getElementById('team-form-title').textContent = 'Adicionar Novo Time';
+                document.getElementById('team-submit-btn').textContent = 'Adicionar Time';
+                document.getElementById('cancel-edit-btn').style.display = 'none';
+                document.getElementById('add-team-form').reset();
+                document.getElementById('team-logo-preview').style.display = 'none';
+                document.getElementById('edit-team-id').value = '';
+            } else {
+                // Adicionar
+                const newTeam = {
+                    id: Date.now(),
+                    name: name,
+                    city: city,
+                    founded: founded,
+                    color: color,
+                    letter: String.fromCharCode(65 + teams.length),
+                    logo: logo,
+                    description: description,
+                    pj: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0, pts: 0
+                };
+                teams.push(newTeam);
+                setStoredData('teams', teams);
+                alert('Time adicionado com sucesso!');
+                document.getElementById('add-team-form').reset();
+                document.getElementById('team-logo-preview').style.display = 'none';
+            }
             loadTeamsList();
-            loadTeams(); // Atualiza a exibição pública
-            loadHomeHighlights(); // Atualiza destaques no início
-            loadStandings(); // Recalcula classificação
+            loadTeams();
+            loadHomeHighlights();
+            loadStandings();
+        }
+        function editTeam(teamId) {
+            const teams = getStoredData('teams');
+            const team = teams.find(t => t.id === teamId);
+            if (team) {
+                editingTeamId = teamId;
+                document.getElementById('team-form-title').textContent = 'Editar Time';
+                document.getElementById('team-submit-btn').textContent = 'Atualizar Time';
+                document.getElementById('cancel-edit-btn').style.display = 'inline-block';
+                document.getElementById('edit-team-id').value = teamId;
+                document.getElementById('team-name').value = team.name;
+                document.getElementById('team-city').value = team.city;
+                document.getElementById('team-founded').value = team.founded;
+                document.getElementById('team-color').value = team.color;
+                document.getElementById('team-description').value = team.description;
+                document.getElementById('team-logo-url').value = team.logo.startsWith('http') ? team.logo : '';
+                if (team.logo) {
+                    document.getElementById('team-logo-preview-img').src = team.logo;
+                    document.getElementById('team-logo-preview').style.display = 'block';
+                }
+            }
         }
         function loadTeamsList() {
             const teamsList = document.getElementById('admin-teams-list');
@@ -1326,6 +1632,7 @@
                     <div style="flex: 1">${team.founded}</div>
                     <div style="flex: 2">${team.description || 'N/A'}</div>
                     <div style="flex: 2" class="table-actions">
+                        <button class="btn btn-success btn-sm" onclick="editTeam(${team.id})">Editar</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteTeam(${team.id})">Excluir</button>
                     </div>
                 `;
@@ -1338,13 +1645,164 @@
                 teams = teams.filter(team => team.id !== teamId);
                 setStoredData('teams', teams);
                 loadTeamsList();
-                loadTeams(); // Atualiza a exibição pública
-                loadHomeHighlights(); // Atualiza destaques
-                loadStandings(); // Recalcula classificação
+                loadTeams();
+                loadHomeHighlights();
+                loadStandings();
                 alert('Time excluído com sucesso!');
             }
         }
-        // Gerenciar Apostas (com exclusão)
+        // Gerenciar Anúncios
+        function initAdsManagement() {
+            const addAdForm = document.getElementById('add-ad-form');
+            const previewContainer = document.getElementById('ad-image-preview');
+            const previewImg = document.getElementById('ad-image-preview-img');
+            if (addAdForm) {
+                const urlInput = document.getElementById('ad-image-url');
+                const fileInput = document.getElementById('ad-image-file');
+                // Preview para URL
+                urlInput.addEventListener('input', function() {
+                    if (this.value) {
+                        previewImg.src = this.value;
+                        previewContainer.style.display = 'block';
+                    } else {
+                        previewContainer.style.display = 'none';
+                    }
+                });
+                // Preview para file
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        fileToBase64(file).then(base64 => {
+                            previewImg.src = base64;
+                            previewContainer.style.display = 'block';
+                        }).catch(err => {
+                            alert('Erro ao carregar imagem: ' + err);
+                        });
+                    } else {
+                        previewContainer.style.display = 'none';
+                    }
+                });
+                addAdForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const title = document.getElementById('ad-title').value;
+                    const whatsapp = document.getElementById('ad-whatsapp').value;
+                    const description = document.getElementById('ad-description').value || '';
+                    let image = urlInput.value;
+                    if (fileInput.files[0]) {
+                        fileToBase64(fileInput.files[0]).then(base64 => {
+                            image = base64;
+                            saveNewAd(title, whatsapp, image, description);
+                        }).catch(err => {
+                            alert('Erro ao processar imagem: ' + err);
+                        });
+                        return;
+                    }
+                    saveNewAd(title, whatsapp, image, description);
+                });
+            }
+        }
+        function saveNewAd(title, whatsapp, image, description) {
+            const ads = getStoredData('ads');
+            const newAd = {
+                id: Date.now(),
+                title: title,
+                whatsapp: whatsapp,
+                image: image,
+                description: description
+            };
+            ads.push(newAd);
+            setStoredData('ads', ads);
+            alert('Anúncio adicionado com sucesso!');
+            document.getElementById('add-ad-form').reset();
+            document.getElementById('ad-image-preview').style.display = 'none';
+            loadAdsList();
+            loadPartnersCarousel();
+        }
+        function loadAdsList() {
+            const adsList = document.getElementById('ads-list');
+            if (!adsList) return;
+            const ads = getStoredData('ads');
+            adsList.innerHTML = '';
+            ads.forEach(ad => {
+                const row = document.createElement('tr');
+                const imageDisplay = ad.image ? `<img src="${ad.image}" alt="${ad.title}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">` : 'Sem imagem';
+                row.innerHTML = `
+                    <td>${imageDisplay}</td>
+                    <td>${ad.title}</td>
+                    <td>${ad.description || 'N/A'}</td>
+                    <td>${ad.whatsapp}</td>
+                    <td class="table-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteAd(${ad.id})">Excluir</button>
+                    </td>
+                `;
+                adsList.appendChild(row);
+            });
+        }
+        function deleteAd(adId) {
+            if (confirm('Tem certeza que deseja excluir este anúncio?')) {
+                let ads = getStoredData('ads');
+                ads = ads.filter(ad => ad.id !== adId);
+                setStoredData('ads', ads);
+                loadAdsList();
+                loadPartnersCarousel();
+                alert('Anúncio excluído com sucesso!');
+            }
+        }
+        // Carrossel de Parceiros
+        function loadPartnersCarousel() {
+            const partnersSection = document.getElementById('partners-section');
+            const ads = getStoredData('ads');
+            if (ads.length === 0) {
+                partnersSection.innerHTML = '<p style="text-align: center; color: #666;">Nenhum parceiro cadastrado ainda.</p>';
+                return;
+            }
+            let carouselHtml = `
+                <h2 class="section-title">Nossos Parceiros</h2>
+                <div class="carousel-container">
+            `;
+            ads.forEach((ad, index) => {
+                const activeClass = index === 0 ? 'active' : '';
+                const imageHtml = ad.image ? `<img src="${ad.image}" alt="${ad.title}">` : '';
+                carouselHtml += `
+                    <div class="carousel-slide ${activeClass}" data-whatsapp="${ad.whatsapp}">
+                        ${imageHtml}
+                        <h3>${ad.title}</h3>
+                        <p>${ad.description}</p>
+                    </div>
+                `;
+            });
+            carouselHtml += `
+                </div>
+                <div class="partners-contact">
+                    <a href="#" class="btn-whatsapp" id="contact-partner-btn" data-whatsapp="${ads[0].whatsapp}" target="_blank">Falar com Apoio</a>
+                </div>
+            `;
+            partnersSection.innerHTML = carouselHtml;
+            // Iniciar carrossel
+            startCarousel();
+            // Evento para botão de contato
+            document.getElementById('contact-partner-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                const whatsapp = this.getAttribute('data-whatsapp');
+                window.open(`https://wa.me/${whatsapp}?text=Olá! Gostaria de saber mais sobre o apoio à Bola na Rede.`, '_blank');
+            });
+        }
+        function startCarousel() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            if (slides.length === 0) return;
+            currentAdIndex = 0;
+            setInterval(() => {
+                slides[currentAdIndex].classList.remove('active');
+                currentAdIndex = (currentAdIndex + 1) % slides.length;
+                slides[currentAdIndex].classList.add('active');
+                // Atualizar botão de contato
+                const btn = document.getElementById('contact-partner-btn');
+                if (btn) {
+                    btn.setAttribute('data-whatsapp', slides[currentAdIndex].getAttribute('data-whatsapp'));
+                }
+            }, 5000); // Muda a cada 5 segundos
+        }
+        // Gerenciar Apostas (atualizado para prêmio full)
         function initBetsManagement() {
             const betsList = document.getElementById('bets-list');
             if (!betsList) return;
@@ -1364,21 +1822,24 @@
                 `;
                 betsList.appendChild(row);
             });
-            // Atualizar totais
+            // Atualizar totais (prêmio full 6)
+            const total = bets.length * 6;
             document.getElementById('total-bets').textContent = bets.length;
-            document.getElementById('total-amount').textContent = (bets.length * 6).toFixed(2);
-            document.getElementById('prize-amount').textContent = (bets.length * 5).toFixed(2);
-            document.getElementById('bets-received').textContent = bets.length; // Atualiza no bolão
+            document.getElementById('total-amount').textContent = total.toFixed(2);
+            document.getElementById('prize-amount-admin').textContent = total.toFixed(2);
+            document.getElementById('bets-received').textContent = bets.length;
+            document.getElementById('prize-amount').textContent = total.toFixed(2);
         }
         function deleteBet(betId) {
             if (confirm('Tem certeza que deseja excluir esta aposta?')) {
                 let bets = getStoredData('bets');
                 bets = bets.filter(bet => bet.id !== betId);
                 setStoredData('bets', bets);
-                initBetsManagement(); // Recarrega lista
+                initBetsManagement();
                 alert('Aposta excluída com sucesso!');
             }
         }
+        // ... (resto das funções permanecem iguais: initMatchManagement, loadMatchesList, deleteMatch, initStandingsManagement, showUpdateResult, loadAdminData, initTabs, loadBettingMatches, showBetResult, initBetting, loadTeams, loadHomeHighlights, loadStandings, loadMatches)
         // Gerenciar Jogos
         function initMatchManagement() {
             const addMatchForm = document.getElementById('add-match-form');
@@ -1423,8 +1884,8 @@
                     alert('Jogo adicionado com sucesso!');
                     addMatchForm.reset();
                     loadMatchesList();
-                    loadBettingMatches(); // Atualiza opções no bolão
-                    loadHomeHighlights(); // Atualiza jogos no início
+                    loadBettingMatches();
+                    loadHomeHighlights();
                 });
             }
             loadTeamsInSelects();
@@ -1458,8 +1919,8 @@
                 matches = matches.filter(match => match.id !== matchId);
                 setStoredData('matches', matches);
                 loadMatchesList();
-                loadBettingMatches(); // Atualiza opções no bolão
-                loadHomeHighlights(); // Atualiza jogos no início
+                loadBettingMatches();
+                loadHomeHighlights();
                 alert('Jogo excluído com sucesso!');
             }
         }
@@ -1490,7 +1951,7 @@
                         setStoredData('teams', teams);
                         showUpdateResult('Estatísticas atualizadas com sucesso! Classificação recalculada.', 'success');
                         loadStandings();
-                        loadHomeHighlights(); // Atualiza destaques no início
+                        loadHomeHighlights();
                         // Limpar form
                         document.getElementById('update-pj').value = '';
                         document.getElementById('update-v').value = '';
@@ -1541,6 +2002,9 @@
             loadMatchesList();
             initStandingsManagement();
             initHeroBgManagement();
+            initPlatformLogoManagement();
+            initAdsManagement();
+            loadAdsList();
         }
         // Sistema de abas
         function initTabs() {
@@ -1736,6 +2200,8 @@
             if (matches.length === 0) {
                 homeMatchesList.innerHTML = '<div class="match-item"><p>Nenhum jogo agendado no momento.</p></div>';
             }
+            // Carregar carrossel de parceiros
+            loadPartnersCarousel();
         }
         // Carregar classificação (dinâmica com logos e posições calculadas)
         function loadStandings() {
@@ -1806,6 +2272,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeData();
             applyHeroBackground();
+            applyPlatformLogo();
             initTabs();
             initBetting();
             loadTeams();
@@ -1821,3 +2288,4 @@
     </script>
 </body>
 </html>
+
